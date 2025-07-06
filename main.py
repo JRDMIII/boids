@@ -21,7 +21,7 @@ for i in range(NUM_BOIDS):
     # Create a boid with random position and default speed and color
     x = random.randint(0, SCREEN_WIDTH)
     y = random.randint(0, SCREEN_HEIGHT)
-    new_boid = Boid(x, y, colour=BOID_COLOUR, bounds=(SCREEN_WIDTH, SCREEN_HEIGHT))
+    new_boid = Boid(x, y, speed=3, colour=BOID_COLOUR, bounds=(SCREEN_WIDTH, SCREEN_HEIGHT))
     boids.append(new_boid)
 
 # Bool to control the main loop

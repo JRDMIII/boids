@@ -1,9 +1,10 @@
 
 import pygame
 import random as r
+import math
 
 class Boid():
-    def __init__(self, x, y, bounds, speed=(1, 1), colour=(255, 255, 255)):
+    def __init__(self, x, y, bounds, speed=1, colour=(255, 255, 255)):
         """Constructor for the Boid class"""
 
         # Coordinates of the boid 
@@ -13,7 +14,13 @@ class Boid():
         variance = lambda: r.randint(-3, 3)
         self.colour = (colour[0] + variance(), colour[1] + variance(), colour[2] + variance())
 
-        self.vx, self.vy = speed
+        # Generate random angles for sin and cos
+        angle = r.randint(0, 360)
+
+        # Calculate sin and cos of the angle multiplied by speed (using parametric equations)
+        self.vx = speed * math.cos(angle)
+        self.vy = speed * math.sin(angle)
+
         self.bounds = bounds # Bounds of the screen
 
     def UpdatePosition(self):

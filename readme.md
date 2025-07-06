@@ -63,3 +63,22 @@ self.y = (self.y + self.vy) % self.bounds[1]
 ```
 
 This instead allows the boid to move in any area within the bounds and the mod function keeps the coordinates in the range of the screen (e.g. if the bounds on the $x$-axis are 800 and a boid is at 801, $801 \; mod \; 800 = 1$ so the boid will teleport to the other side of the screen).
+
+Now I wanted to add a way for boids to all have the same speed but start moving in random directions. For this, I looked back to my trigonometry knowledge, specifically the parametric equations of a circle:
+
+$$
+x = rcos(t) \\
+y = rsin(t)
+$$
+
+Applying these to the boids you get:
+```python
+# Generate random angles for sin and cos
+angle = r.randint(0, 360)
+
+# Calculate sin and cos of the angle multiplied by speed (using parametric equations)
+self.vx = speed * math.cos(angle)
+self.vy = speed * math.sin(angle)
+```
+
+This left us with an environment where boids start moving in random directions and 
