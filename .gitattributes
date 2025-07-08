@@ -2,3 +2,5 @@ assets/* export-ignore
 *.md export-ignore
 *.gif export-ignore
 *.log export-ignore
+*.gitattributes export-ignore
+assets export-ignore
