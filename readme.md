@@ -1,9 +1,9 @@
 # Dev Log: Boids
 
-<figure align="center">
+<div align="center">
     <img src="./assets//boids.gif" width="400" />
-    <figcaption>Figure 1: Boids simulation in Python</figpython>
-</figure>
+    <p><em>Figure 1: Boids simulation in Python</em></p>
+</div>
 
 ## How to Run
 To run the application, download the latest release and then:
