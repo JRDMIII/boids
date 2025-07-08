@@ -1,5 +1,16 @@
 # Dev Log: Boids
 
+<figure align="center">
+    <img src="./assets//boids.gif" width="400" />
+    <figcaption>Figure 1: Boids simulation in Python</figpython>
+</figure>
+
+## How to Run
+To run the application, download the latest release and then:
+
+1. Run `pip install -r requirements.txt` to get all modules used
+2. Run `main.py`
+
 ## The Theory
 Boids are an artificial life program which simulates the flocking behaviour of birds, and related group motion. They are an example of emergent behaviour: behaviour that arises from the interaction of individual agents adhering to a set of simple rules. The rules boids follow are:
 - **Separation**: Steer to avoid crowing local flockmates
