@@ -327,3 +327,156 @@ pygame.quit()
 Thanks to the universe handling most of the updates in the `update_universe()` function. It was at this point that the variance in my naming convensions for functions bugged me so I changed them all.
 
 And with that the separation rule was complete!
+
+## Log 3: Alignment
+Now onto the second rule which is **alignment**. This states that boids should steer towards the average heading of local flockmates.
+
+For this, for every boid, b, we can get the direction of nearby flockmates and apply a force which turns b in that direction.
+
+As I was developing this, I realised that looping over the neighbours again for each rule is unnecessary when instead we can loop over all neighbours once and calculate all forces at once.
+
+I also added a function to apply multiple forces in one function call.
+
+```python
+def _ApplyForces(self, *forces:list[pygame.Vector2]):
+    for f in forces:
+        self.acceleration = self.acceleration + f
+```
+
+New function for applying forces from rules looks like this:
+
+```python
+def _ApplyRuleForces(self, neighbours:list['Boid']):
+    separation_force = pygame.Vector2()
+    alignment_force = pygame.Vector2()
+    
+    num = len(neighbours)
+
+    # Ignore function if there are no neighbours
+    if num == 0: return
+
+    for n in neighbours:
+        n: Boid
+
+        # Adding averaged velocity to the alignment force
+        alignment_force += n.velocity / num
+
+        displacement = self.position - n.position
+        distance = self.position.distance_to(n.position)
+
+        # We scale the separation force applied by the distance to the boid
+        if distance != 0:
+            displacement /= distance
+        separation_force += displacement
+    
+    # Normalising the alignment force so that it doesn't exceed max speed
+    alignment_force = alignment_force.normalize() * self.max_speed
+    alignment_force -= self.velocity
+    
+    self._ApplyForces(separation_force, alignment_force)
+```
+
+You may also notice I've now made a bunch of functions in the boid private so I don't accidentally apply a force to the boid from an external class.
+
+Once this alignment implementation was in it seemed like the boids were jolting around instead of smoothly changing direction and I realised this was because sometimes the force applied to the boid was so large that it caused an instantaneous switch in direction.
+
+To resolve this, I gave the boids a maximum force that can be applied to them at any one time and clamped the force calculated in the `_ApplyRulesForce()` so it can never go over that value. I also gave them a larger radius so that they had more boids to average at one time.
+
+```python
+# Normalising the alignment force so that it doesn't exceed max speed
+alignment_force = alignment_force.normalize() * self.max_speed
+alignment_force -= self.velocity
+if alignment_force.magnitude() > 0: alignment_force = alignment_force.clamp_magnitude(self.max_force)
+```
+
+To check the directions of boids more easily I also took this time to change the shape of boids from circles to triangles.
+
+```python
+def _Draw(self, screen):
+    """Draw the boid on the given screen."""
+    # Calculating direction of the boid
+    angle = math.atan2(self.velocity.y, self.velocity.x)
+
+    # Calculate the points of the triangle
+    size = 5
+
+    points = [
+        (size, 0),
+        (-size / 2, -size / 2),
+        (-size / 2, size / 2)
+    ]
+
+    new_points = []
+
+    # Rotating the points to match the direction
+    for x, y in points:
+        rotated_x = x * math.cos(angle) - y * math.sin(angle)
+        rotated_y = x * math.sin(angle) + y * math.cos(angle)
+
+        new_points.append((self.position.x + rotated_x, self.position.y + rotated_y))
+
+    pygame.draw.polygon(screen, self.colour, new_points)
+```
+
+(I'm doing as much of this by myself as I can but that was a ChatGPT special).
+
+From here I was still having a lot of jolting and this is where I realised the separation force was largely overpowering the alignment force as I hadn't clamped or averaged it in the `_ApplyRuleForces()` function.
+
+Another thing I noticed was that I would get errors in my `_ApplyRulesForces()` function due to trying to normalise a 0 vector. I had already added a check to skip the function if there were no neighbours so this meant there was somehow a case where there could be a neighbour and still 0 forces applied.
+
+It took a little browse to realise that I wasn't checking to see if a neighbour found in the `GetNeighbours()` function was actually the boid itself. Once I had done this the boids were moving smoothly round the place without needs to check for 0 vectors.
+
+```python
+def GetNeighbours(self, boid:Boid, radius=30):
+    ...
+
+    for dx in [-1, 0, 1]:
+        for dy in [-1, 0, 1]:
+            key = (cell_x + dx, cell_y + dy)
+            for b in self.partitions[key]:
+                if b == boid: continue
+
+                ...
+```
+
+I also added another check in the `_ApplyRulesForces()` so that no zero vectors could get through.
+
+```python
+# Normalising the alignment force so that it doesn't exceed max speed
+if alignment_force.length() != 0:
+    alignment_force = alignment_force.normalize() * self.max_speed
+    alignment_force -= self.velocity
+    if alignment_force.length() != 0:
+        alignment_force = alignment_force.clamp_magnitude(self.max_force)
+
+if separation_force.length() != 0:
+    separation_force = separation_force.normalize() * self.max_speed
+    separation_force -= self.velocity
+    if separation_force.length() != 0:
+        separation_force = separation_force.clamp_magnitude(self.max_force)
+```
+
+Ugly but it works
+
+At this point I also wanted to do a quick check of performance and see if my spacial partitioning gave me the speed I was hoping for. For this, I increased the number of boids to 300 and checked the fps. I also quickly programmed a function to calculate the average fps while running the simulation and a timer which sets total simulation time to 0
+
+```python
+elapsed = (pygame.time.get_ticks() - start_time) / 1000
+if elapsed >= total_time:
+    PrintResults(avg)
+    running = False
+```
+
+These were the results:
+
+| Boid Num | Screen Size | Average FPS |
+| -------- | ----------- | ----------- |
+| 200      | 1000×800    | 105.3       |
+| 200      | 1920×1080   | 144.9       |
+| 300      | 1000×800    | 48.5        |
+| 300      | 1920×1080   | 75.8        |
+
+It was interesting to see that increasing screen size increased the framerate no matter the boid number however after some critical thinking it made a lot of sense. With a larger screen size, boids have more space and therefore are less likely to encounter neighbours so less neighbours will need to be iterated through in the force calculations.
+
+With this 2 of the 3 rules had been implemented!
+

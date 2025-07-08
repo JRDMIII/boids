@@ -11,10 +11,10 @@ class Universe:
         self.boid_colour = boid_colour
         self.boids = []
 
-        self.partition_size = 100
+        self.partition_size = 200
         self.partitions = defaultdict(list)
     
-    def Setup(self):
+    def Setup(self, max_speed):
         """Create all boids and add them to the list of boids"""
         for _ in range(self.boid_number):
             # Create a boid with random position and default speed and color
@@ -22,7 +22,7 @@ class Universe:
             y = random.randint(0, self.height)
 
             new_boid = Boid(x, y, 
-                speed=3, 
+                speed=max_speed, 
                 colour=self.boid_colour, 
                 bounds=(self.width, self.height)
             )
@@ -48,7 +48,7 @@ class Universe:
                 self.partitions[key] = []
             self.partitions[key].append(b)
             
-    def GetNeighbours(self, boid:Boid, radius=10):
+    def GetNeighbours(self, boid:Boid, radius=30):
         neighbours = []
 
         # Getting grid coordinates for current boid
@@ -60,6 +60,8 @@ class Universe:
                 key = (cell_x + dx, cell_y + dy)
                 # Loop through all boids in that partition and check if they are within the radius
                 for b in self.partitions[key]:
+                    if b == boid: continue
+
                     b: Boid
                     dist = math.sqrt((boid.position.x - b.position.x)**2 + (boid.position.y - b.position.y)**2)
                     if dist <= radius:
