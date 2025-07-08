@@ -480,3 +480,22 @@ It was interesting to see that increasing screen size increased the framerate no
 
 With this 2 of the 3 rules had been implemented!
 
+## Log 3: Cohesion
+And then there was one. The final rule to implement was **cohesion**. This rule states that boids should steer to move towards the average position of local flockmates.
+
+To do this my first thought was to get all neighbours of a boid b, average out their position (avg_pos) add a force along the vector from b to avg_pos.
+
+```python
+if cohesion_force.length() != 0:
+    cohesion_force -= self.position
+    cohesion_force.normalize() * self.max_speed
+    cohesion_force -= self.velocity
+    if cohesion_force.length() != 0:
+        cohesion_force = cohesion_force.clamp_magnitude(self.max_force)
+```
+
+Once this was implmeneted I realised that the alignment and cohesion forces were overpowering the separation forces. For this I added a slight multiplier to the separation force clamp so It could reach a higher max force.
+
+And with that the main simulation was done!
+
+From here it is just fun additions to the system if I can be asked.

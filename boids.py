@@ -34,6 +34,7 @@ class Boid():
     def _ApplyRuleForces(self, neighbours:list['Boid']):
         separation_force = pygame.Vector2()
         alignment_force = pygame.Vector2()
+        cohesion_force = pygame.Vector2()
         
         num = len(neighbours)
 
@@ -47,6 +48,7 @@ class Boid():
 
             # Adding averaged velocity to the alignment force
             alignment_force += n.velocity / num
+            cohesion_force += n.position / num
 
             displacement = self.position - n.position
             distance = self.position.distance_to(n.position)
@@ -67,9 +69,16 @@ class Boid():
             separation_force = separation_force.normalize() * self.max_speed
             separation_force -= self.velocity
             if separation_force.length() != 0:
-                separation_force = separation_force.clamp_magnitude(self.max_force)
+                separation_force = separation_force.clamp_magnitude(self.max_force*1.5)
+            
+        if cohesion_force.length() != 0:
+            cohesion_force -= self.position
+            cohesion_force.normalize() * self.max_speed
+            cohesion_force -= self.velocity
+            if cohesion_force.length() != 0:
+                cohesion_force = cohesion_force.clamp_magnitude(self.max_force)
         
-        self._ApplyForces(separation_force, alignment_force)
+        self._ApplyForces(separation_force, alignment_force, cohesion_force)
 
     def _UpdatePosition(self):
         """Update the position of the boid"""

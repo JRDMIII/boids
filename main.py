@@ -4,8 +4,8 @@ from universe import Universe
 # Setting up pygame environment
 pygame.init()
 
-SCREEN_WIDTH = 1920
-SCREEN_HEIGHT = 1080
+SCREEN_WIDTH = 1200
+SCREEN_HEIGHT = 1000
 CLOCK = pygame.time.Clock()
 FONT = pygame.font.SysFont("Arial", 10)
 
@@ -25,6 +25,7 @@ def CalculateAverageFPS(average_fps, next_fps):
     total /= average_fps[1] + 1
     return total, average_fps[1] + 1
 
+timed = False
 total_time = 20
 start_time = pygame.time.get_ticks()
 
@@ -59,10 +60,11 @@ while running:
     # Update the display
     pygame.display.flip()
 
-    elapsed = (pygame.time.get_ticks() - start_time) / 1000
-    if elapsed >= total_time:
-        PrintResults(avg)
-        running = False
+    if timed:
+        elapsed = (pygame.time.get_ticks() - start_time) / 1000
+        if elapsed >= total_time:
+            PrintResults(avg)
+            running = False
     
     # Cap frame rate at 165 (For 165hz screen)
     CLOCK.tick(165)
