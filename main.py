@@ -8,6 +8,7 @@ SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 1000
 CLOCK = pygame.time.Clock()
 FONT = pygame.font.SysFont("Arial", 10)
+FPS_CAP = 165
 
 # Setting up the display
 pygame.display.set_caption("Boids")
@@ -29,13 +30,16 @@ timed = False
 total_time = 20
 start_time = pygame.time.get_ticks()
 
+debug = False
+
 # Bool to control the main loop
 running = True
 
 def PrintResults(avg):
-    print(f"Number of boids: {NUM_BOIDS}")
-    print(f"Screen Size: {SCREEN_WIDTH}×{SCREEN_HEIGHT}")
-    print(f"Average FPS was: {avg[0]}")
+    if debug:
+        print(f"Number of boids: {NUM_BOIDS}")
+        print(f"Screen Size: {SCREEN_WIDTH}×{SCREEN_HEIGHT}")
+        print(f"Average FPS was: {avg[0]}")
 
 while running:
     avg = (0, 0)
@@ -54,7 +58,7 @@ while running:
 
     fps = CLOCK.get_fps()
     fps_text = FONT.render(f"FPS: {fps:.2f}", True, (255, 255, 255))
-    SCREEN.blit(fps_text, (10, 10))
+    # SCREEN.blit(fps_text, (10, 10))
     avg = CalculateAverageFPS(avg, fps)
 
     # Update the display
@@ -66,7 +70,7 @@ while running:
             PrintResults(avg)
             running = False
     
-    # Cap frame rate at 165 (For 165hz screen)
-    CLOCK.tick(165)
+    # Cap frame rate
+    CLOCK.tick(FPS_CAP)
 
 pygame.quit()
